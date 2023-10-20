@@ -1,0 +1,28 @@
+[project]
+name = "tkdm"
+description = "kdm9's toolkit"
+authors = [
+    { name = "K. D. Murray", email = "info@gekkonid.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "tqdm",
+    "pillow",
+    "heif-image-plugin",
+]
+dynamic = [
+    "version",
+]
+[project.readme]
+file = "README.md" 
+content-type = "text/markdown"
+
+[project.scripts]
+tkdm = "tkdm:main"
+
+[tool.flit.module]
+name = "tkdm"
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
