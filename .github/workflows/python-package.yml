@@ -36,4 +36,4 @@ jobs:
     - name: Build and Test CLI
       run: |
         pip install .
-        blsl help
+        tkdm help
