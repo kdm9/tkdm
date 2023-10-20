@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from sys import argv, exit, stderr
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 cmds = {}
 
