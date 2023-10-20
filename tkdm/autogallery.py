@@ -5,6 +5,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from sys import stderr
 from PIL import ImageFile, Image
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 from tqdm import tqdm
@@ -18,7 +19,6 @@ from dataclasses import dataclass
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 import os
-from sys import stderr
 
 @dataclass
 class RenderedImg:
