@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# kdm9: This was originally taken from a gist, licensed under the Apache
+# license There are so many pasted copies of the original, none of which have
+# the author listed, so I'm not entirely sure who originally made it.
+# Regardless, I've pretty much re-written the whole thing
+# Copyright (c) 2022 Dr. K. D. Murray/Gekkonid Consulting <spam@gekkonid.com>
 
 #  Recursively generate index.html files for
 #  all subdirectories in a directory tree
@@ -85,10 +90,8 @@ a::after {
 
 def process_dir(top_dir, opts):
     for parentdir, dirs, files in os.walk(top_dir):
-
         if not opts.dryrun:
             abs_path = os.path.join(parentdir, index_file_name)
-
             try:
                 index_file = open(abs_path, "w")
             except Exception as e:
@@ -120,39 +123,31 @@ def process_dir(top_dir, opts):
             flagfile_path = os.path.join(absolute_dir_path, "hiddendir")
             if os.path.isfile(flagfile_path):
                 continue
-
             if not os.access(absolute_dir_path, os.W_OK):
                 print("***ERROR*** folder {} is not writable! SKIPPING!".format(absolute_dir_path))
                 continue
             if opts.verbose:
                 print('DIR:{}'.format(absolute_dir_path))
-
             if not opts.dryrun:
                 index_file.write("""
        <li><a style="display:block; width:100%" href="{link}/index.html">&#128193; {link_text}</a></li>""".format(
                     link=dirname,
                     link_text=dirname
                 ))
-
         for filename in sorted(files):
             if filename == "hiddendir" or filename == "nobackup":
                 continue
-
             if opts.filter and not fnmatch.fnmatch(filename, opts.filter):
                 if opts.verbose:
                     print('SKIP: {}/{}'.format(parentdir, filename))
                 continue
-
             if opts.verbose:
                 print('{}/{}'.format(parentdir, filename))
-
             # don't include index.html in the file listing
             if filename.strip().lower() == index_file_name.lower():
                 continue
-
             try:
                 size = int(os.path.getsize(os.path.join(parentdir, filename)))
-
                 if not opts.dryrun:
                     index_file.write("""
        <li>&#x1f4c4; <a href="{link}">{link_text}</a><span class="size">{size}</span></li>""".format(
@@ -160,11 +155,9 @@ def process_dir(top_dir, opts):
                                 link_text=filename,
                                 size=pretty_size(size))
                     )
-
             except Exception as e:
                 print('ERROR writing file name:', e)
                 repr(filename)
-
         if not opts.dryrun:
             index_file.write("""
   </div>
@@ -175,31 +168,23 @@ def process_dir(top_dir, opts):
 
 # bytes pretty-printing
 UNITS_MAPPING = [
-    (1024 ** 5, ' PB'),
-    (1024 ** 4, ' TB'),
-    (1024 ** 3, ' GB'),
-    (1024 ** 2, ' MB'),
-    (1024 ** 1, ' KB'),
-    (1024 ** 0, (' byte', ' bytes')),
+    (1000 ** 5, ' PB'),
+    (1000 ** 4, ' TB'),
+    (1000 ** 3, ' GB'),
+    (1000 ** 2, ' MB'),
+    (1000 ** 1, ' KB'),
+    (1000 ** 0, ' byte'),
 ]
 
 
 def pretty_size(bytes, units=UNITS_MAPPING):
     """Human-readable file sizes.
-
     ripped from https://pypi.python.org/pypi/hurry.filesize/
     """
     for factor, suffix in units:
         if bytes >= factor:
             break
     amount = int(bytes / factor)
-
-    if isinstance(suffix, tuple):
-        singular, multiple = suffix
-        if amount == 1:
-            suffix = singular
-        else:
-            suffix = multiple
     return str(amount) + suffix
 
 
@@ -232,11 +217,9 @@ def main(argv=None):
                         help="don't write any files, just simulate the traversal",
                         required=False)
 
-    parser.add_argument('--yes', 
-                        action='store_true',
+    parser.add_argument('--yes', action='store_true',
                         help="Don't ask for confirmation if run without args",
                         required=False)
-
 
     config = parser.parse_args(argv)
     if config.top_dir is None:

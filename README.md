@@ -1,6 +1,6 @@
 # tkdm
 
-`kdm9`'s toolkit of miscellaneous goodies
+`kdm9`'s toolkit of miscellaneous goodies. MPL2 license.
 
 
 # `tkdm autogallery`
@@ -18,3 +18,12 @@ images/
         img4.jpg
 $ tkdm autogallery -i ./images -o ./webgallery/ -t 8
 ```
+
+# `tkdm genautoindex`
+
+Automatically generate an index.html like Apache's autoindex, or caddy's `file_server browse`, only for static sites.
+
+```
+$ tkdm genautoindex
+```
+
