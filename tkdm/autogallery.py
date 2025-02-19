@@ -10,15 +10,17 @@ from PIL import ImageFile, Image
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 from tqdm import tqdm
 try:
-    import HeifImagePlugin
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
 except ImportError:
-    print("Failed to load HeifImagePlugin. *.HEIF won't be supported.", file=stderr)
+    print("Failed to load pillow_heif. *.HEIF won't be supported.", file=stderr)
 
 import argparse
 from dataclasses import dataclass
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 import os
+import shutil
 
 @dataclass
 class RenderedImg:
@@ -31,8 +33,10 @@ class RenderedSubdir:
     name: str
     images: list[RenderedImg]
 
-def render_subdir(dirpath, outbase):
+def render_subdir(dirpath, outbase, height=240):
     dirname = Path(dirpath).name
+    if not dirname:
+        dirname = "."
 
     outpath= Path(outbase) / dirname
     outpath.mkdir(exist_ok=True, parents=True)
@@ -48,10 +52,16 @@ def render_subdir(dirpath, outbase):
                 print(str(exc), file=stderr)
                 continue
             fname = (file.stem+".jpg")
-            img.save(outpath / fname)
+            if file.suffix.lower() in [".jpg", ".jpeg"]:
+                # Just copy, preserves quality/meta
+                shutil.copyfile(file, outpath / fname)
+            else:
+                img.save(outpath / fname)
 
             tname = (file.stem+".thumb.jpg")
-            img.thumbnail((320, 240))
+            w, h = img.size
+            #print(img.size, w/h)
+            img.thumbnail((int(height*1.5), height))
             img.save(outpath / tname)
             res.images.append(RenderedImg(file.name, f"{dirname}/{fname}", f"{dirname}/{tname}"))
         break
@@ -86,6 +96,8 @@ def main(argv=None):
             help="Input base directory")
     ap.add_argument("-t", "--threads", default=1, type=int,
             help="parallel threads")
+    ap.add_argument("-y", "--yres", default=480, type=int,
+            help="Thumbnail height")
     args = ap.parse_args(argv)
 
     outpath = args.outdir
@@ -94,12 +106,11 @@ def main(argv=None):
     res = []
     jobs = []
     with ProcessPoolExecutor(args.threads) as exc:
-
         for root, dirs, files in os.walk(args.indir):
             root = Path(root)
-            jobs.append(exc.submit(render_subdir, root/".", outpath))
+            jobs.append(exc.submit(render_subdir, root/".", outpath, height=args.yres))
             for dir in dirs:
-                jobs.append(exc.submit(render_subdir, root/dir, outpath))
+                jobs.append(exc.submit(render_subdir, root/dir, outpath, height=args.yres))
             break
 
         for job in tqdm(as_completed(jobs), total=len(jobs)):
@@ -125,7 +136,7 @@ def main(argv=None):
             </div>
             <script>
                 $("#dirdiv{divid}").justifiedGallery({{
-                    rowHeight: 240,
+                    rowHeight: {args.yres},
                     lastRow: "left",
                 }});
             </script>

@@ -8,7 +8,7 @@ requires-python = ">=3.9"
 dependencies = [
     "tqdm",
     "pillow",
-    "heif-image-plugin",
+    "pillow-heif",
 ]
 dynamic = [
     "version",
